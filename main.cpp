@@ -1,6 +1,5 @@
 #include <iostream>
 #include "Matrix.cpp"
-#include "Number.cpp"
 using namespace std;
 
 void main() {
