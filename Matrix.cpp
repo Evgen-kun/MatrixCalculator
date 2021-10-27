@@ -22,12 +22,21 @@ public:
 		return det;
 	}
 
+	float getB_ByIndex(int i) {
+		return b[i][0];
+	}
+
+	void set__B(Matrix l) {
+		b = l.x;
+	}
+
 	void input() {
-		cout << "Введите размерность матрицы: ";
+		cout << "Enter the dimension of the matrix: ";
 		cin >> n;
 
-		cout << "\nРешить систему методом Гаусса(1)\nНайти определитель(2)\n";
-		cout<<"Найти обратную матрицу(3)\nLU-разложение(4)\n" << endl;
+		cout << "\nSolve a system of equations by the Gaussian elimination(1)\nFind determinant(2)\n";
+		cout<<"Find inverse matrix(3)\nLU decomposition(4)\n";
+		cout << "Solve a system of equations by the LU decomposition(5)\n" << endl;
 		int m;
 		cin >> m;
 		switch (m)
@@ -36,7 +45,7 @@ public:
 			{
 				input_A();
 				input_B();
-				cout << endl << "Исходная матрица" << endl;
+				cout << endl << "Source matrix" << endl;
 				output();
 				gauss();
 				output__det();
@@ -50,7 +59,7 @@ public:
 				for (int i = 0; i < n; i++) {
 					b[i][0] = 0;
 				}
-				cout << endl << "Исходная матрица" << endl;
+				cout << endl << "Source matrix" << endl;
 				output__A();
 				determinant();
 				output__det();
@@ -60,7 +69,7 @@ public:
 		case 3:
 			{
 				input_A();
-				cout << endl << "Исходная матрица" << endl;
+				cout << endl << "Source matrix" << endl;
 				output__A();
 				input_E();
 				inverse_matrix();
@@ -70,18 +79,36 @@ public:
 		case 4:
 			{
 				input_A();
-				cout << endl << "Исходная матрица" << endl;
+				cout << endl << "Source matrix" << endl;
 				output__A();
-				input_E();
-				LU_decomposition();
+				//input_E();
+				Matrix l, u;
+				LU_decomposition(l, u);
 				break;
+			}
+
+		case 5:
+			{
+				input_A();
+				cout << endl << "Source matrix" << endl;
+				output__A();
+				Matrix l, u;
+				LU_decomposition(l, u);
+				l.input_B();
+				for(int i = 0; i < n; i++) {
+					float s = 0;
+					for(int j = 0; j < i; j++) {
+						s += l.a[i][j] * l.getB_ByIndex(j);
+					}
+					l.x[i][0] = l.getB_ByIndex(i) - s;
+				}
 			}
 		}
 		
 	}
 
 	void input_A() {
-		cout << endl << "Введите матрицу: " << endl;
+		cout << endl << "Input the matrix: " << endl;
 		for (int i = 0; i < n; i++) {
 			for (int j = 0; j < n; j++) {
 				cin >> a[i][j];
@@ -90,7 +117,7 @@ public:
 	}
 
 	void input_B() {
-		cout << endl << "Введите столбец свободных членов: " << endl;
+		cout << endl << "Enter a column of constant terms: " << endl;
 		for (int i = 0; i < n; i++) {
 			for (int j = 0; j < 1; j++) {
 				cin >> b[i][j];
@@ -135,7 +162,7 @@ public:
 		find__determinant();
 
 		if (det == 0) {
-			cout << "Матрица вырождена" << endl << endl;
+			cout << "Singular matrix" << endl << endl;
 			return;
 		}
 	}
@@ -151,7 +178,7 @@ public:
 		find__determinant();
 
 		if (det == 0) {
-			cout<<"Матрица вырождена" << endl << endl;
+			cout<<"Singular matrix" << endl << endl;
 			return;
 		}
 		
@@ -170,7 +197,7 @@ public:
 			}
 			if (s1 == 0 || s2 == 0) {
 				det = 0;
-				cout << "Матрица вырождена. Решений бесконечно много" << endl << endl;
+				cout << "Singular matrix. Infinitely many solutions" << endl << endl;
 				return true;
 			}
 			s1 = 0;
@@ -183,11 +210,11 @@ public:
 		if(det == 0) {
 
 			if (a[n - 1][n - 1] == 0 && b[n - 1][0] != 0) {
-				cout << "Решений нет" << endl << endl;
+				cout << "No solutions" << endl << endl;
 			}
 
 			if (a[n - 1][n - 1] == 0 && b[n - 1][0] == 0) {
-				cout << "Матрица вырождена. Решений бесконечно много" << endl << endl;
+				cout << "Singular matrix. Infinitely many solutions" << endl << endl;
 			}
 			return true;
 		}
@@ -348,7 +375,7 @@ public:
 	}
 
 	void output__inverse_matrix() {
-		cout << "Обратная матрица" << endl << endl;
+		cout << "Inverse matrix" << endl << endl;
 		for (int i = 0; i < n; i++) {
 			for (int j = 0; j < n; j++)
 				cout << e[i][j] << "\t";
@@ -387,8 +414,7 @@ public:
 		
 	}
 
-	void LU_decomposition() {
-		Matrix l, u;
+	void LU_decomposition(Matrix l, Matrix u) {
 		l.set__N(n);
 		u.set__N(n);
 		for (int i = 0; i < n; i++)
@@ -420,10 +446,12 @@ public:
 			l.a[i][i] = 1;
 		}
 
-		cout << "Матрица L" << endl;
+		cout << "L-matrix" << endl;
 		l.output__A();
-		cout << "Матрица U" << endl;
+		cout << "U-matrix" << endl;
 		u.output__A();
+
+		LU_determinant(u);
 	}
 
 	void find__answer() {
@@ -455,6 +483,14 @@ public:
 		cout << endl;
 	}
 
+	void LU_determinant(Matrix u) {
+		float s = 0;
+		for(int i = 0; i < n; i++) {
+			s += u.a[i][i];
+		}
+		cout << "LU determinant = " << s << endl << endl;
+	}
+
 private:
 	float sum(int i) {
 		float s = 0;
@@ -466,13 +502,6 @@ private:
 		}	
 		else {
 			return 0;
-		}
-	}
-
-	float LU_sum(int i, int j, Matrix l, Matrix u) {
-		float s = 0;
-		for(int k = 0; k < i - 1; k++) {
-			s += l.a[i][k] * u.a[k][j];
 		}
 	}
 };
